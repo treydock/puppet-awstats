@@ -1,0 +1,13 @@
+# AWSTATS CONFIGURE FILE 7.0
+#
+# File managed by Puppet!
+#
+
+<% @config.keys.sort.each do |key| -%>
+<% value = @config[key] -%>
+<% if value.to_i.to_s == value -%>
+<%= key %>=<%= value %>
+<% else -%>
+<%= key %>="<%= value %>"
+<% end -%>
+<% end -%>
