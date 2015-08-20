@@ -10,7 +10,10 @@ class awstats (
   $manage_apache        = true,
   $allow_from           = ['127.0.0.1'],
   $apache_confd_dir     = $awstats::params::apache_confd_dir,
+  $vhosts               = {},
 ) inherits awstats::params {
+
+  validate_hash($vhosts)
 
   case $::osfamily {
     'RedHat': {
@@ -33,19 +36,19 @@ class awstats (
   }
 
   file { '/etc/awstats':
-    ensure  => 'directory',
-    path    => $config_dir,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0755',
+    ensure => 'directory',
+    path   => $config_dir,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0755',
   }
 
   file { '/var/lib/awstats':
-    ensure  => 'directory',
-    path    => $data_dir,
-    owner   => $data_dir_owner,
-    group   => $data_dir_group,
-    mode    => '0755',
+    ensure => 'directory',
+    path   => $data_dir,
+    owner  => $data_dir_owner,
+    group  => $data_dir_group,
+    mode   => '0755',
   }
 
   file { 'awstats.conf':
@@ -57,4 +60,6 @@ class awstats (
     content => template('awstats/awstats.apache.conf.erb'),
     require => [ Package['httpd'], Package['awstats'] ],
   }
+
+  create_resources('awstats::vhost', $vhosts)
 }
