@@ -10,10 +10,12 @@ class awstats (
   $manage_apache        = true,
   $allow_from           = ['127.0.0.1'],
   $apache_confd_dir     = $awstats::params::apache_confd_dir,
+  $location_configs     = {},
   $vhosts               = {},
 ) inherits awstats::params {
 
-  validate_hash($vhosts)
+  validate_array($allow_from)
+  validate_hash($location_configs, $vhosts)
 
   case $::osfamily {
     'RedHat': {

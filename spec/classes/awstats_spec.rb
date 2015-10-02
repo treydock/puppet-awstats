@@ -61,16 +61,77 @@ describe 'awstats' do
       'Alias /awstatsclasses "/usr/share/awstats/wwwroot/classes/"',
       'Alias /awstatscss "/usr/share/awstats/wwwroot/css/"',
       'Alias /awstatsicons "/usr/share/awstats/wwwroot/icon/"',
-      'ScriptAlias /awstats/ "/usr/share/awstats/wwwroot/cgi-bin/"',
+      'Alias /awstats "/usr/share/awstats/wwwroot/cgi-bin"',
       '<Directory "/usr/share/awstats/wwwroot">',
-      '    Options None',
-      '    AllowOverride None',
-      '    Order Allow,Deny',
-      '    Allow from 127.0.0.1',
+      '  Options None',
+      '  AllowOverride None',
+      '  Order Allow,Deny',
+      '  Allow from 127.0.0.1',
       '</Directory>',
+      '<Directory "/usr/share/awstats/wwwroot/cgi-bin">',
+      '  DirectoryIndex awstats.pl',
+      '  Options ExecCGI',
+      '  AddHandler cgi-script .pl',
+      #'</Directory>', #Duplicate lines upset verify_contents
       '<IfModule mod_env.c>',
-      '    SetEnv PERL5LIB /usr/share/awstats/lib:/usr/share/awstats/plugins',
+      '  SetEnv PERL5LIB /usr/share/awstats/lib:/usr/share/awstats/plugins',
       '</IfModule>',
     ])
+  end
+
+  context 'when location_configs are defined' do
+    let(:params) do
+      {
+        :location_configs => {
+          'SSLRequireSSL' => true,
+          'AuthType' => 'basic',
+          'AuthName' => '"Secure Area"',
+          'AuthBasicProvider' => 'ldap',
+          'AuthLDAPUrl' => '"ldap://ldap.example.com/ou=People,dc=example,dc=com?uid?sub" TLS',
+          'AuthLDAPBindDN' => '"uid=app_bind,ou=Service Accounts,dc=example,dc=com"',
+          'AuthLDAPBindPassword' => '"password"',
+          'AuthLDAPGroupAttribute' => 'uniquemember',
+          'AuthLDAPGroupAttributeIsDN' => 'On',
+          'Require' => 'ldap-group cn=admins,ou=Groups,dc=example,dc=com',
+        }
+      }
+    end
+
+    it 'should create valid awstats.conf' do
+      #content = catalogue.resource('file', 'awstats.conf').send(:parameters)[:content]
+      #pp content.split(/\n/)
+      verify_contents(catalogue, 'awstats.conf', [
+        'Alias /awstatsclasses "/usr/share/awstats/wwwroot/classes/"',
+        'Alias /awstatscss "/usr/share/awstats/wwwroot/css/"',
+        'Alias /awstatsicons "/usr/share/awstats/wwwroot/icon/"',
+        'Alias /awstats "/usr/share/awstats/wwwroot/cgi-bin"',
+        '<Directory "/usr/share/awstats/wwwroot">',
+        '  Options None',
+        '  AllowOverride None',
+        '  Order Allow,Deny',
+        '  Allow from 127.0.0.1',
+        '</Directory>',
+        '<Directory "/usr/share/awstats/wwwroot/cgi-bin">',
+        '  DirectoryIndex awstats.pl',
+        '  Options ExecCGI',
+        '  AddHandler cgi-script .pl',
+        #'</Directory>', #Duplicate lines upset verify_contents
+        '<IfModule mod_env.c>',
+        '  SetEnv PERL5LIB /usr/share/awstats/lib:/usr/share/awstats/plugins',
+        '</IfModule>',
+        '<Location /awstats>',
+        '  AuthBasicProvider ldap',
+        '  AuthLDAPBindDN "uid=app_bind,ou=Service Accounts,dc=example,dc=com"',
+        '  AuthLDAPBindPassword "password"',
+        '  AuthLDAPGroupAttribute uniquemember',
+        '  AuthLDAPGroupAttributeIsDN On',
+        '  AuthLDAPUrl "ldap://ldap.example.com/ou=People,dc=example,dc=com?uid?sub" TLS',
+        '  AuthName "Secure Area"',
+        '  AuthType basic',
+        '  Require ldap-group cn=admins,ou=Groups,dc=example,dc=com',
+        '  SSLRequireSSL',
+        '</Location>',
+      ])
+    end
   end
 end

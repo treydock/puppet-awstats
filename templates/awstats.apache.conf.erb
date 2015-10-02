@@ -9,21 +9,38 @@
 Alias /awstatsclasses "/usr/share/awstats/wwwroot/classes/"
 Alias /awstatscss "/usr/share/awstats/wwwroot/css/"
 Alias /awstatsicons "/usr/share/awstats/wwwroot/icon/"
-ScriptAlias /awstats/ "/usr/share/awstats/wwwroot/cgi-bin/"
+Alias /awstats "/usr/share/awstats/wwwroot/cgi-bin"
 
 
 #
 # This is to permit URL access to scripts/files in AWStats directory.
 #
 <Directory "/usr/share/awstats/wwwroot">
-    Options None
-    AllowOverride None
-    Order Allow,Deny
+  Options None
+  AllowOverride None
+  Order Allow,Deny
 <% @allow_from.each do |allow_from| -%>
-    Allow from <%= allow_from %>
+  Allow from <%= allow_from %>
 <% end -%>
+</Directory>
+<Directory "/usr/share/awstats/wwwroot/cgi-bin">
+  DirectoryIndex awstats.pl
+  Options ExecCGI
+  AddHandler cgi-script .pl
 </Directory>
 # Additional Perl modules
 <IfModule mod_env.c>
-    SetEnv PERL5LIB /usr/share/awstats/lib:/usr/share/awstats/plugins
+  SetEnv PERL5LIB /usr/share/awstats/lib:/usr/share/awstats/plugins
 </IfModule>
+<% if ! @location_configs.empty? %>
+<Location /awstats>
+<% @location_configs.keys.sort.each do |key| -%>
+<% value = @location_configs[key] -%>
+<% if !!value == value -%>
+  <%= key %>
+<% else -%>
+  <%= key %> <%= value %>
+<% end -%>
+<% end -%>
+</Location>
+<% end %>
