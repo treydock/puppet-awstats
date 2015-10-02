@@ -2,42 +2,31 @@
 #
 # See README.md for more details.
 define awstats::vhost (
-  $log_file         = 'UNSET',
-  $site_domain      = 'UNSET',
-  $host_aliases     = 'UNSET',
-  $config_overrides = {},
   $ensure           = 'present',
+  $log_file         = undef,
+  $site_domain      = undef,
+  $host_aliases     = undef,
+  $config_overrides = {},
 ) {
 
   include awstats
   include awstats::params
 
-  $log_file_real = $log_file ? {
-    'UNSET' => "/var/log/httpd/${name}.access.log",
-    default => $log_file,
-  }
-
-  $site_domain_real = $site_domain ? {
-    'UNSET' => $name,
-    default => $site_domain,
-  }
-
-  $host_aliases_real = $host_aliases ? {
-    'UNSET' => "www.${name}",
-    default => $host_aliases,
-  }
+  $_log_file = pick($log_file, "/var/log/httpd/${name}.access.log")
+  $_site_domain = pick($site_domain, $name)
+  $_host_aliases  = pick($host_aliases, "www.${name}")
 
   $vhost_config = {
-    'LogFile' => $log_file_real,
+    'LogFile' => $_log_file,
     'LogType' => 'W',
     'LogFormat' => '1',
     'LogSeparator' => ' ',
     'DNSLookup' => '2',
-    'DirData' => '/var/lib/awstats',
+    'DirData' => $awstats::data_dir,
     'DirCgi' => '/awstats',
     'DirIcons' => '/awstatsicons',
-    'SiteDomain' => $site_domain_real,
-    'HostAliases' => $host_aliases_real,
+    'SiteDomain' => $_site_domain,
+    'HostAliases' => $_host_aliases,
     'AllowToUpdateStatsFromBrowser' => '0',
     'AllowFullYearView' => '2',
   }

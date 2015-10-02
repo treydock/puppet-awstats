@@ -1,12 +1,16 @@
 require 'spec_helper'
 
 describe 'awstats' do
-  let :facts do
-    {
-      :osfamily               => 'RedHat',
-      :operatingsystemrelease => '6.5',
-      :concat_basedir         => '/dne',
-    }
+  on_supported_os.each do |os, facts|
+    context "on #{os}" do
+      let(:facts) { facts.merge({:concat_basedir => '/dne'}) }
+
+      it { should compile.with_all_deps }
+    end
+  end
+
+  let(:facts) do
+    on_supported_os['centos-6-x86_64'].merge({:concat_basedir => '/dne'})
   end
 
   let(:params) {{  }}
