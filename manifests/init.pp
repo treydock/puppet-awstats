@@ -61,6 +61,7 @@ class awstats (
     mode    => '0644',
     content => template('awstats/awstats.apache.conf.erb'),
     require => [ Package['httpd'], Package['awstats'] ],
+    notify  => Service['httpd'],
   }
 
   create_resources('awstats::vhost', $vhosts)

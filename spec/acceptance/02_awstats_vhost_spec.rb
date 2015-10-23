@@ -1,10 +1,19 @@
 require 'spec_helper_acceptance'
 
-describe 'awstats class:' do
+describe 'awstats::vhost define:' do
   context 'default parameters' do
     it 'should run successfully' do
       pp =<<-EOS
         class { 'awstats': }
+        host { 'test.localdomain': ip => '127.0.0.1' }
+        apache::vhost { 'test.localdomain':
+          docroot         => '/var/www/test.localdomain',
+          port            => '80',
+          access_log_file => '/var/log/httpd/test.localdomain.access.log',
+        }
+        awstats::vhost { 'test.localdomain':
+          log_file => '/var/log/httpd/test.localdomain.access.log',
+        }
       EOS
   
       apply_manifest(pp, :catch_failures => true)
@@ -37,17 +46,13 @@ describe 'awstats class:' do
       #TODO: Test content
     end
 
-    describe command('curl http://localhost.localdomain/awstats') do
+    describe command('curl http://test.localdomain/awstats') do
       its(:stdout) { should match // }
     end
 
-    describe command('curl -L --fail http://localhost.localdomain/awstats') do
-      its(:stdout) { should match /Advanced Web Statistics for localhost.localdomain/ }
+    describe command('curl -L http://test.localdomain/awstats') do
+      its(:stdout) { should match /Advanced Web Statistics for test.localdomain/ }
       its(:exit_status) { should eq 0 }
-    end
-
-    describe command('curl http://localhost.localdomain') do
-      its(:stdout) { should match // }
     end
   end
 end

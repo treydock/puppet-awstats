@@ -57,6 +57,7 @@ describe 'awstats' do
       'group'   => 'root',
       'mode'    => '0644',
       'require' => ['Package[httpd]', 'Package[awstats]'],
+      'notify'  => 'Service[httpd]',
     })
   end
 

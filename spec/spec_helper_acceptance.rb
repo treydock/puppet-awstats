@@ -19,7 +19,7 @@ RSpec.configure do |c|
 
     hosts.each do |host|
       if fact('osfamily') == 'RedHat'
-        on host, puppet('module', 'install', 'stahnma-epel', '--version', '"0.x"'), { :acceptable_exit_codes => [0,1] }
+        on host, puppet('module', 'install', 'stahnma-epel', '--version', '"1.x"'), { :acceptable_exit_codes => [0,1] }
       end
       on host, puppet('module', 'install', 'puppetlabs-stdlib', '--version', '">=3.2.0 <5.0.0"'), { :acceptable_exit_codes => [0,1] }
       on host, puppet('module', 'install', 'puppetlabs-apache', '--version', '"1.x"'), { :acceptable_exit_codes => [0,1] }
